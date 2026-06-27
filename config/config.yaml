@@ -1,0 +1,51 @@
+# Main configuration for the LLM-based intelligent ETL monitoring project
+
+project:
+  name: "llm-etl-monitor"
+  version: "0.1.0"
+
+# --- Local LLM settings (Ollama) ---
+llm:
+  provider: "ollama"
+  base_url: "http://localhost:11434"
+  model_name: "mistral:latest"   # or llama3:8b
+  temperature: 0.0
+  max_tokens: 512
+  timeout_seconds: 30
+
+# --- MLflow settings ---
+mlflow:
+  tracking_uri: "http://localhost:5000"
+  experiment_name: "llm-etl-monitoring"
+
+# --- Decision engine thresholds (Hybrid Router) ---
+decision_engine:
+  # Errors detectable by simple rules are NOT sent to the LLM
+  simple_error_types: ["missing_value", "duplicate", "type_mismatch", "format_error"]
+  semantic_error_types: ["semantic_inconsistency", "schema_mismatch_semantic", "unstructured_text"]
+  max_rows_per_llm_batch: 20
+
+# --- Evaluation thresholds (per project spec) ---
+evaluation_thresholds:
+  completeness_min_percent: 95
+  consistency_min_percent: 90
+  duplicate_rate_max_percent: 1
+  llm_latency_max_seconds_per_row: 5
+  correction_error_rate_min_percent: 80
+  log_coverage_percent: 100
+  drift_detection_delay_max_batches: 1
+
+# --- Datasets ---
+datasets:
+  titanic:
+    path: "data/raw/titanic.csv"
+    expected_main_errors: ["missing_value", "type_mismatch"]
+  adult_income:
+    path: "data/raw/adult_income.csv"
+    expected_main_errors: ["inconsistency", "noise", "duplicate"]
+  openml_dirty:
+    path: "data/raw/openml_dirty.csv"
+    expected_main_errors: ["schema_mismatch", "semantic_error"]
+  synthetic_llmclean:
+    path: "data/raw/synthetic_llmclean.csv"
+    expected_main_errors: ["semantic_error", "mixed_format"]
