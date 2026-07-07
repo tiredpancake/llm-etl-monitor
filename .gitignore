@@ -1,0 +1,41 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# --- Virtual environments ---
+venv/
+.venv/
+env/
+ENV/
+
+# --- MLflow ---
+mlflow_data/
+mlruns/
+mlartifacts/
+
+# --- Data (often large / sensitive - keep raw data out of git) ---
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# --- Reports / generated outputs ---
+reports/*.json
+!reports/.gitkeep
+
+# --- IDE / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Env vars / secrets ---
+.env
+*.env.local
+
+# --- Jupyter ---
+.ipynb_checkpoints/
