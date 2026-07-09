@@ -259,33 +259,132 @@ proposal: inconsistency, noise, duplicates):
 - Drift across a 50/50 batch split: 0/15 columns flagged (expected on an IID
   split — confirms no false positives on real data).
 
-### Next steps (Phase 2 continued / Phase 6)
+### Phase 2 (complete) — all 4 datasets
 
-1. ~~Repeat the full pipeline for **Adult Income**~~ — **done** via the generic
-   `src/pipelines/run_pipeline.py` (see above). Remaining datasets:
-   **OpenML Dirty Tabular** and the **synthetic LLMClean-style dataset** — both
-   run with the same `--dataset` runner once their CSVs are placed in
-   `data/raw/` and given a config entry.
-2. Decide on and implement a strategy for the `Cabin` column (impute vs.
-   binary `Has_Cabin` feature).
-3. ~~Implement **Drift Detection** (Layer 8.3 of the proposal)~~ — **done**,
-   see `src/monitoring/drift_detection.py` above. Remaining: wire it into the
-   per-batch pipeline runs for the other datasets.
-4. Build the full multi-agent ReAct orchestration (Profiler/Cleaner/Reviewer
-   as actual agents via LangChain or CrewAI) instead of sequential scripts.
-5. Produce the final evaluation report comparing Completeness, Consistency,
-   Duplicate Rate, and DQIS across all 4 datasets, per Section 10 of the
-   proposal.
+- `data/raw/titanic.csv` and `data/raw/adult_income.csv` — downloaded from
+  public GitHub mirrors of the original Kaggle/UCI sources
+  (`datasciencedojo/datasets`, `jbrownlee/Datasets`), 891 and 48,842 rows
+  respectively, matching the proposal's dataset table (Section 9).
+- `data/raw/openml_dirty.csv` and `data/raw/synthetic_llmclean.csv` —
+  OpenML's "Dirty Tabular" category isn't one fixed downloadable file (it's
+  many different community tables), and the proposal's own LLMClean-style
+  entry is explicitly *synthetically generated*. Both are produced by
+  `scripts/generate_synthetic_datasets.py`, a seeded generator that injects
+  exactly the error types the proposal lists for each: **schema mismatch +
+  semantic error** for `openml_dirty` (mixed numeric/text encodings,
+  impossible ages, future hire dates, inconsistent country spellings), and
+  **semantic error + mixed format** for `synthetic_llmclean` (mixed date/price
+  formats, quantity/status logical inconsistencies, malformed phone numbers).
+  Swap in a real OpenML download later if you have internet access to
+  openml.org — the pipeline is dataset-agnostic either way.
+
+### Phase 3 (complete for all datasets) — generic pipeline
+
+`src/pipelines/run_pipeline.py` now runs ingest → profile → rule-based clean
+→ metrics → drift detection → MLflow for all 4 `config.yaml` datasets:
+
+```bash
+python -m src.pipelines.run_pipeline --dataset titanic --no-mlflow
+python -m src.pipelines.run_pipeline --dataset adult_income --no-mlflow
+python -m src.pipelines.run_pipeline --dataset openml_dirty --no-mlflow
+python -m src.pipelines.run_pipeline --dataset synthetic_llmclean --no-mlflow
+```
+
+Drift detection (Layer 8.3) is included in every run — it splits each
+cleaned dataset into a reference/current batch pair and reports
+KS/KL/PSI/JS metrics, so all 4 datasets now have a `*_drift_report.json`.
+
+### Phase 4 (complete) — real multi-agent architecture
+
+`src/agents/` now implements the exact interaction flow from **Section 7.3**
+of the proposal as four cooperating agent classes, each with its own
+Thought/Action/Observation trace (a hand-rolled ReAct loop):
+
+| Agent | File | Role |
+|---|---|---|
+| **Agent Profiler** | `profiler_agent.py` | Produces the JSON quality report (wraps Layer 6.2) |
+| **Engine Decision** | `decision_agent.py` | Routes each flagged column to `rule` or `llm` based on dtype + cardinality (generalizes the old hardcoded Titanic `decision_engine.py`) |
+| **Agent Cleaner** | `cleaner_agent.py` | Builds a generic few-shot prompt per row, calls the local LLM, returns `{value, confidence}` |
+| **Agent Reviewer** | `reviewer_agent.py` (`ReviewerAgent` class) | Accepts a correction only if confidence ≥ `agents.score_confidence_threshold` (config.yaml) **and** it's in the column's allowed values; applies accepted changes |
+
+`src/agents/orchestrator.py` runs the full loop and logs every
+decision/suggestion/review/trace as JSON artifacts + MLflow (Section 7.2's
+audit requirement):
+
+```bash
+# with a real local Ollama model:
+python -m src.agents.orchestrator --dataset titanic --no-mlflow
+
+# offline, for testing the agent plumbing without a GPU (uses a deterministic
+# mock LLM instead of Ollama — NOT a substitute for real evaluation numbers):
+python -m src.agents.orchestrator --dataset titanic --no-mlflow --mock-llm
+```
+
+> **Note on LangChain/CrewAI:** the proposal names these as one option
+> ("قابل پیادهسازی است"، implementable via) for the agent framework. LangChain
+> 1.x restructured its agent/executor API significantly and CrewAI pulls in a
+> large, fast-moving dependency tree; a direct implementation of the same
+> four-agent flow turned out more robust and easier to grade/debug for a
+> course project. Each `Agent.run(...)` method is already tool-shaped, so
+> wrapping them as LangChain/CrewAI tools later is a small follow-up, not a
+> rewrite.
+>
+> **All 4 datasets were run end-to-end through the orchestrator with
+> `--mock-llm` in this sandbox** (no GPU/Ollama available here) purely to
+> verify the routing → cleaning → review → logging plumbing works. The
+> correction-rate numbers from that run are **not representative of the real
+> model** — re-run without `--mock-llm` against a live Ollama `mistral`
+> instance to get evaluation-worthy numbers.
+
+### Phase 6 (scaffolded) — final evaluation report
+
+`scripts/generate_final_report.py` aggregates every dataset's
+`*_metrics.json` / `*_drift_report.json` / `*_agentic_review.json` into one
+comparison table checked against `config.yaml -> evaluation_thresholds`
+(Section 10's thresholds exactly), written to
+`reports/final_evaluation_report.md` and `.json`:
+
+```bash
+python scripts/generate_final_report.py
+```
+
+Completeness, Duplicate Rate, Log Coverage, and Drift are computed directly
+from artifacts already on disk. **LLM Latency** (needs real per-row Ollama
+timing) and the **Consistency Score** (needs the Great Expectations /
+rule-validation layer wired into the generic pipeline) are left as `n/a`
+until those pieces are run for real — see "Next steps" below.
+
+### Next steps
+
+1. Re-run `src/agents/orchestrator.py` **without** `--mock-llm` against a
+   live local Ollama model for all 4 datasets, to get real Error Correction
+   Rate and LLM Latency numbers (Ollama isn't reachable from this sandbox).
+2. Wire a generic rule-validation / Great Expectations-style Consistency
+   Score into `run_pipeline.py` (currently only implemented ad hoc for
+   Titanic in `src/validation/rule_validation.py`) so the final report can
+   fill in the Consistency row.
+3. Decide on and implement a strategy for Titanic's `Cabin` column (impute
+   vs. binary `Has_Cabin` feature) — currently mode-imputed by the generic
+   pipeline, which the proposal flags as unreliable at 77% missing.
+4. Optional: wrap the four `Agent` classes as LangChain or CrewAI tools if
+   the assignment specifically requires that framework rather than an
+   equivalent hand-rolled ReAct loop.
+5. Add `pytest` coverage for the agent routing logic (`decision_agent.py`'s
+   cardinality-ratio thresholds are the highest-value thing to pin down).
 
 ## Phase checklist
 
 - [x] Phase 1: Infrastructure setup
-- [~] Phase 2: Dataset preparation (Titanic + Adult Income done, 2 datasets
-  pending: OpenML Dirty, synthetic LLMClean)
-- [~] Phase 3: Core ETL layer implementation (Titanic per-dataset scripts +
-  generic config-driven runner working for Titanic and Adult Income)
-- [~] Phase 4: Multi-agent architecture (Cleaner + Reviewer logic implemented
-  as scripts; full ReAct/LangChain orchestration pending)
-- [~] Phase 5: Monitoring and evaluation (MLflow logging working end-to-end
-  for Titanic; drift detection implemented — `src/monitoring/drift_detection.py`)
-- [ ] Phase 6: Final evaluation and report
+- [x] Phase 2: Dataset preparation (all 4 datasets: Titanic, Adult Income,
+  OpenML Dirty, synthetic LLMClean)
+- [x] Phase 3: Core ETL layer implementation (generic config-driven runner
+  working for all 4 datasets, incl. drift detection)
+- [x] Phase 4: Multi-agent architecture (Profiler/Decision/Cleaner/Reviewer
+  as real cooperating agents with a ReAct-style trace + MLflow logging)
+- [~] Phase 5: Monitoring and evaluation (MLflow logging + drift detection
+  implemented and wired into every dataset; not yet run against a live
+  MLflow *server* outside this sandbox)
+- [~] Phase 6: Final evaluation and report (comparison table scaffolded and
+  producing real Completeness/Duplicate/Log Coverage/Drift numbers; LLM
+  Latency + Consistency Score need a live Ollama run + validation layer,
+  see "Next steps" #1-2)
