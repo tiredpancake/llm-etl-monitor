@@ -1,0 +1,61 @@
+{
+  "dataset": "titanic",
+  "rules": [
+    {
+      "rule": "uniqueness",
+      "column": "PassengerId",
+      "success": true,
+      "num_failed": 0,
+      "failed_row_indices": []
+    },
+    {
+      "rule": "not_null",
+      "column": "Pclass",
+      "success": true,
+      "num_failed": 0,
+      "failed_row_indices": []
+    },
+    {
+      "rule": "not_null",
+      "column": "Sex",
+      "success": true,
+      "num_failed": 0,
+      "failed_row_indices": []
+    },
+    {
+      "rule": "range_check",
+      "column": "Age",
+      "success": true,
+      "num_failed": 0,
+      "failed_row_indices": []
+    },
+    {
+      "rule": "missing_values",
+      "column": "Age",
+      "success": false,
+      "num_failed": 177,
+      "failed_row_indices": [
+        5,
+        17,
+        19,
+        26,
+        28,
+        29,
+        31,
+        32,
+        36,
+        42,
+        45,
+        46,
+        47,
+        48,
+        55,
+        64,
+        65,
+        76,
+        77,
+        82
+      ]
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "dataset": "titanic_ref_half",
+  "reference_rows": 445,
+  "current_rows": 446,
+  "columns_checked": 12,
+  "columns_drifted": 4,
+  "drift_share": 0.3333,
+  "drift_detected": true,
+  "drifted_columns": [
+    "PassengerId",
+    "Name",
+    "Ticket",
+    "Cabin"
+  ],
+  "columns": {
+    "PassengerId": {
+      "type": "numeric",
+      "ks_statistic": 1.0,
+      "ks_p_value": 0.0,
+      "kl_divergence": 24.5211,
+      "ref_mean": 223.0,
+      "cur_mean": 668.5,
+      "drift": true
+    },
+    "Survived": {
+      "type": "numeric",
+      "ks_statistic": 0.0143,
+      "ks_p_value": 1.0,
+      "kl_divergence": 0.0004,
+      "ref_mean": 0.391,
+      "cur_mean": 0.3767,
+      "drift": false
+    },
+    "Pclass": {
+      "type": "numeric",
+      "ks_statistic": 0.0443,
+      "ks_p_value": 0.7446,
+      "kl_divergence": 0.0054,
+      "ref_mean": 2.3438,
+      "cur_mean": 2.2735,
+      "drift": false
+    },
+    "Name": {
+      "type": "categorical",
+      "psi": 41.4465,
+      "js_divergence": 1.0,
+      "num_categories": 891,
+      "drift": true
+    },
+    "Sex": {
+      "type": "categorical",
+      "psi": 0.0178,
+      "js_divergence": 0.0032,
+      "num_categories": 2,
+      "drift": false
+    },
+    "Age": {
+      "type": "numeric",
+      "ks_statistic": 0.098,
+      "ks_p_value": 0.0646,
+      "kl_divergence": 0.0364,
+      "ref_mean": 28.6604,
+      "cur_mean": 30.7379,
+      "drift": false
+    },
+    "SibSp": {
+      "type": "numeric",
+      "ks_statistic": 0.0479,
+      "ks_p_value": 0.6635,
+      "kl_divergence": 0.0116,
+      "ref_mean": 0.5888,
+      "cur_mean": 0.4574,
+      "drift": false
+    },
+    "Parch": {
+      "type": "numeric",
+      "ks_statistic": 0.016,
+      "ks_p_value": 1.0,
+      "kl_divergence": 0.0081,
+      "ref_mean": 0.391,
+      "cur_mean": 0.3722,
+      "drift": false
+    },
+    "Ticket": {
+      "type": "categorical",
+      "psi": 31.314,
+      "js_divergence": 0.7609,
+      "num_categories": 681,
+      "drift": true
+    },
+    "Fare": {
+      "type": "numeric",
+      "ks_statistic": 0.0462,
+      "ks_p_value": 0.6994,
+      "kl_divergence": 0.1247,
+      "ref_mean": 32.3759,
+      "cur_mean": 32.0329,
+      "drift": false
+    },
+    "Cabin": {
+      "type": "categorical",
+      "psi": 32.1076,
+      "js_divergence": 0.7698,
+      "num_categories": 147,
+      "drift": true
+    },
+    "Embarked": {
+      "type": "categorical",
+      "psi": 0.0058,
+      "js_divergence": 0.001,
+      "num_categories": 3,
+      "drift": false
+    }
+  }
+}

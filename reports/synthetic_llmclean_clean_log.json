@@ -1,0 +1,17 @@
+{
+  "duplicates_removed": 0,
+  "imputations": [
+    {
+      "column": "payment_method",
+      "strategy": "mode",
+      "filled_count": 20,
+      "fill_value": "bank_transfer"
+    },
+    {
+      "column": "phone_number",
+      "strategy": "mode",
+      "filled_count": 34,
+      "fill_value": "(202) 906-4509"
+    }
+  ]
+}

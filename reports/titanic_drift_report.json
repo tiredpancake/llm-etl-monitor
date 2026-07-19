@@ -1,0 +1,122 @@
+{
+  "dataset": "titanic",
+  "reference_rows": 891,
+  "current_rows": 891,
+  "columns_checked": 9,
+  "columns_skipped_id_like": [
+    "Name",
+    "Ticket",
+    "Cabin"
+  ],
+  "columns_drifted": 9,
+  "drift_share": 1.0,
+  "drift_detected": true,
+  "drifted_columns": [
+    "PassengerId",
+    "Survived",
+    "Pclass",
+    "Sex",
+    "Age",
+    "SibSp",
+    "Parch",
+    "Fare",
+    "Embarked"
+  ],
+  "columns": {
+    "PassengerId": {
+      "type": "numeric",
+      "ks_statistic": 0.4512,
+      "ks_p_value": 0.0,
+      "kl_divergence": 3.3081,
+      "ref_mean": 446.0,
+      "cur_mean": 826.7327,
+      "drift": true
+    },
+    "Survived": {
+      "type": "numeric",
+      "ks_statistic": 0.6162,
+      "ks_p_value": 0.0,
+      "kl_divergence": 4.5883,
+      "ref_mean": 0.3838,
+      "cur_mean": 1.105,
+      "drift": true
+    },
+    "Pclass": {
+      "type": "numeric",
+      "ks_statistic": 0.7205,
+      "ks_p_value": 0.0,
+      "kl_divergence": 2.6184,
+      "ref_mean": 2.3086,
+      "cur_mean": 3.5529,
+      "drift": true
+    },
+    "Name": {
+      "type": "categorical",
+      "skipped": "id_like_column",
+      "unique_ratio": 1.0,
+      "drift": false
+    },
+    "Sex": {
+      "type": "categorical",
+      "psi": 0.3213,
+      "js_divergence": 0.0558,
+      "num_categories": 2,
+      "drift": true
+    },
+    "Age": {
+      "type": "numeric",
+      "ks_statistic": 0.5658,
+      "ks_p_value": 0.0,
+      "kl_divergence": 1.5756,
+      "ref_mean": 29.6991,
+      "cur_mean": 51.3504,
+      "drift": true
+    },
+    "SibSp": {
+      "type": "numeric",
+      "ks_statistic": 0.8328,
+      "ks_p_value": 0.0,
+      "kl_divergence": 3.4762,
+      "ref_mean": 0.523,
+      "cur_mean": 2.2035,
+      "drift": true
+    },
+    "Parch": {
+      "type": "numeric",
+      "ks_statistic": 0.7598,
+      "ks_p_value": 0.0,
+      "kl_divergence": 3.2242,
+      "ref_mean": 0.3816,
+      "cur_mean": 1.6061,
+      "drift": true
+    },
+    "Ticket": {
+      "type": "categorical",
+      "skipped": "id_like_column",
+      "unique_ratio": 0.7643,
+      "drift": false
+    },
+    "Fare": {
+      "type": "numeric",
+      "ks_statistic": 0.7823,
+      "ks_p_value": 0.0,
+      "kl_divergence": 3.0846,
+      "ref_mean": 32.2042,
+      "cur_mean": 107.6584,
+      "drift": true
+    },
+    "Cabin": {
+      "type": "categorical",
+      "skipped": "id_like_column",
+      "unique_ratio": 0.7206,
+      "drift": false
+    },
+    "Embarked": {
+      "type": "categorical",
+      "psi": 0.2389,
+      "js_divergence": 0.0414,
+      "num_categories": 3,
+      "drift": true
+    }
+  }
+}

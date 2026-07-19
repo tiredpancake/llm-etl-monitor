@@ -1,0 +1,93 @@
+{
+  "dataset": "synthetic_llmclean",
+  "reference_rows": 1000,
+  "current_rows": 1000,
+  "columns_checked": 6,
+  "columns_skipped_id_like": [
+    "order_id",
+    "order_date",
+    "price",
+    "phone_number"
+  ],
+  "columns_drifted": 6,
+  "drift_share": 1.0,
+  "drift_detected": true,
+  "drifted_columns": [
+    "customer_name",
+    "product_category",
+    "quantity",
+    "shipping_country",
+    "payment_method",
+    "order_status"
+  ],
+  "columns": {
+    "order_id": {
+      "type": "categorical",
+      "skipped": "id_like_column",
+      "unique_ratio": 1.0,
+      "drift": false
+    },
+    "customer_name": {
+      "type": "categorical",
+      "psi": 2.7428,
+      "js_divergence": 0.3828,
+      "num_categories": 64,
+      "drift": true
+    },
+    "order_date": {
+      "type": "categorical",
+      "skipped": "id_like_column",
+      "unique_ratio": 0.732,
+      "drift": false
+    },
+    "product_category": {
+      "type": "categorical",
+      "psi": 1.3203,
+      "js_divergence": 0.2235,
+      "num_categories": 6,
+      "drift": true
+    },
+    "price": {
+      "type": "categorical",
+      "skipped": "id_like_column",
+      "unique_ratio": 0.995,
+      "drift": false
+    },
+    "quantity": {
+      "type": "numeric",
+      "ks_statistic": 0.554,
+      "ks_p_value": 0.0,
+      "kl_divergence": 2.5235,
+      "ref_mean": 2.967,
+      "cur_mean": 5.177,
+      "drift": true
+    },
+    "shipping_country": {
+      "type": "categorical",
+      "psi": 1.3234,
+      "js_divergence": 0.2242,
+      "num_categories": 6,
+      "drift": true
+    },
+    "payment_method": {
+      "type": "categorical",
+      "psi": 0.9786,
+      "js_divergence": 0.1689,
+      "num_categories": 4,
+      "drift": true
+    },
+    "order_status": {
+      "type": "categorical",
+      "psi": 1.0646,
+      "js_divergence": 0.1831,
+      "num_categories": 5,
+      "drift": true
+    },
+    "phone_number": {
+      "type": "categorical",
+      "skipped": "id_like_column",
+      "unique_ratio": 1.0,
+      "drift": false
+    }
+  }
+}

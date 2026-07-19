@@ -1,0 +1,23 @@
+{
+  "duplicates_removed": 0,
+  "imputations": [
+    {
+      "column": "Age",
+      "strategy": "median",
+      "filled_count": 177,
+      "fill_value": "28.0"
+    },
+    {
+      "column": "Cabin",
+      "strategy": "mode",
+      "filled_count": 687,
+      "fill_value": "B96 B98"
+    },
+    {
+      "column": "Embarked",
+      "strategy": "mode",
+      "filled_count": 2,
+      "fill_value": "S"
+    }
+  ]
+}

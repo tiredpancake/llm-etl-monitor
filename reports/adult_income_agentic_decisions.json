@@ -1,0 +1,23 @@
+[
+  {
+    "column": "workclass",
+    "missing_count": 1836,
+    "route": "llm",
+    "action": "semantic_impute",
+    "reason": "categorical, low cardinality ratio (0.000 <= 0.5) -> needs semantic reasoning"
+  },
+  {
+    "column": "occupation",
+    "missing_count": 1843,
+    "route": "llm",
+    "action": "semantic_impute",
+    "reason": "categorical, low cardinality ratio (0.000 <= 0.5) -> needs semantic reasoning"
+  },
+  {
+    "column": "native_country",
+    "missing_count": 583,
+    "route": "llm",
+    "action": "semantic_impute",
+    "reason": "categorical, low cardinality ratio (0.001 <= 0.5) -> needs semantic reasoning"
+  }
+]

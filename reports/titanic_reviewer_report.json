@@ -1,0 +1,26 @@
+[
+  {
+    "row_index": 61,
+    "Pclass": 1,
+    "Fare": 80.0,
+    "Sex": "female",
+    "raw_llm_response": "S",
+    "predicted_embarked": "S",
+    "source": "llm",
+    "is_valid_category": true,
+    "is_clean_response": true,
+    "accepted_by_reviewer": true
+  },
+  {
+    "row_index": 829,
+    "Pclass": 1,
+    "Fare": 80.0,
+    "Sex": "female",
+    "raw_llm_response": "S",
+    "predicted_embarked": "S",
+    "source": "llm",
+    "is_valid_category": true,
+    "is_clean_response": true,
+    "accepted_by_reviewer": true
+  }
+]

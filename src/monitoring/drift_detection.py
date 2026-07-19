@@ -12,6 +12,13 @@ Design goals:
 - Numeric columns  -> Kolmogorov-Smirnov test (+ KL divergence on histograms).
 - Categorical columns -> Population Stability Index (PSI) + Jensen-Shannon
   divergence on category frequencies.
+- Identifier-like columns (Name, Ticket, Cabin, PassengerId, etc. - i.e. any
+  non-numeric column whose unique-value ratio exceeds
+  `ID_LIKE_RATIO_THRESHOLD`) are excluded from drift checks: PSI/KL are not
+  statistically meaningful when almost every value is unique, and including
+  them produces false-positive drift on every run regardless of whether real
+  distributional drift occurred. This mirrors the same
+  `high_cardinality_ratio` logic already used in decision_agent.py.
 - Optional MLflow logging that degrades gracefully when no tracking server is
   running (so the module is usable offline / in CI).
 
@@ -43,6 +50,12 @@ from scipy.stats import ks_2samp
 # --- tunable thresholds (mirrors config/config.yaml where relevant) ---
 KS_PVALUE_THRESHOLD = 0.05     # numeric: p < threshold => distributions differ
 PSI_THRESHOLD = 0.20           # categorical: PSI >= 0.2 => significant shift
+ID_LIKE_RATIO_THRESHOLD = 0.5  # columns with unique_ratio above this (e.g. Name,
+                                # Ticket, Cabin, PassengerId) are identifier-like;
+                                # PSI/KL are not statistically meaningful for them
+                                # and produce false-positive drift, so they are
+                                # excluded from drift checks (mirrors
+                                # decision_agent.py's high_cardinality_ratio logic).
 HIST_BINS = 20                 # bins used for KL divergence on numeric columns
 _EPS = 1e-9                    # smoothing to avoid log(0) / divide-by-zero
 
@@ -147,16 +160,41 @@ def detect_drift(
     reference: pd.DataFrame,
     current: pd.DataFrame,
     dataset_name: str = "unknown",
+    id_like_ratio_threshold: float = ID_LIKE_RATIO_THRESHOLD,
 ) -> Dict:
-    """Compare two batches column-by-column and return a drift report dict."""
+    """Compare two batches column-by-column and return a drift report dict.
+
+    Columns whose unique-value ratio in the reference batch exceeds
+    `id_like_ratio_threshold` (e.g. Name, Ticket, Cabin, PassengerId) are
+    treated as identifier-like/free-text and excluded from drift checks:
+    PSI and KL divergence are not statistically meaningful when almost every
+    value is unique, and including them produces false-positive drift on
+    every run regardless of whether real distributional drift occurred.
+    """
     shared_cols = [c for c in reference.columns if c in current.columns]
 
     columns_report: Dict[str, Dict] = {}
     drifted: List[str] = []
+    skipped_id_like: List[str] = []
 
     for col in shared_cols:
         ref_s, cur_s = reference[col], current[col]
-        if pd.api.types.is_numeric_dtype(ref_s) and pd.api.types.is_numeric_dtype(cur_s):
+
+        non_null_count = ref_s.notna().sum()
+        unique_ratio = ref_s.nunique(dropna=True) / non_null_count if non_null_count else 0.0
+        is_numeric = pd.api.types.is_numeric_dtype(ref_s) and pd.api.types.is_numeric_dtype(cur_s)
+
+        if not is_numeric and unique_ratio > id_like_ratio_threshold:
+            columns_report[col] = {
+                "type": "categorical",
+                "skipped": "id_like_column",
+                "unique_ratio": round(float(unique_ratio), 4),
+                "drift": False,
+            }
+            skipped_id_like.append(col)
+            continue
+
+        if is_numeric:
             result = _numeric_drift(ref_s, cur_s)
         else:
             result = _categorical_drift(ref_s, cur_s)
@@ -164,12 +202,13 @@ def detect_drift(
         if result.get("drift"):
             drifted.append(col)
 
-    n_checked = len(shared_cols)
+    n_checked = len(shared_cols) - len(skipped_id_like)
     report = {
         "dataset": dataset_name,
         "reference_rows": int(len(reference)),
         "current_rows": int(len(current)),
         "columns_checked": n_checked,
+        "columns_skipped_id_like": skipped_id_like,
         "columns_drifted": len(drifted),
         "drift_share": round(len(drifted) / n_checked, 4) if n_checked else 0.0,
         "drift_detected": len(drifted) > 0,
@@ -282,6 +321,8 @@ def main() -> None:
     print("\n=== DRIFT DETECTION REPORT ===")
     print(f"Dataset:          {report['dataset']}")
     print(f"Columns checked:  {report['columns_checked']}")
+    if report.get('columns_skipped_id_like'):
+        print(f"Columns skipped (id-like, e.g. Name/Ticket/Cabin): {report['columns_skipped_id_like']}")
     print(f"Columns drifted:  {report['columns_drifted']}  {report['drifted_columns']}")
     print(f"Drift detected:   {report['drift_detected']}")
     print(f"Report saved to:  {out_path}")

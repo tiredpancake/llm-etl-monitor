@@ -1,0 +1,23 @@
+{
+  "duplicates_removed": 24,
+  "imputations": [
+    {
+      "column": "workclass",
+      "strategy": "mode",
+      "filled_count": 1836,
+      "fill_value": "Private"
+    },
+    {
+      "column": "occupation",
+      "strategy": "mode",
+      "filled_count": 1843,
+      "fill_value": "Prof-specialty"
+    },
+    {
+      "column": "native_country",
+      "strategy": "mode",
+      "filled_count": 582,
+      "fill_value": "United-States"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+[
+  {
+    "agent": "Agent Profiler",
+    "thought": "Need a baseline data-quality report for 'adult_income' before any routing decision can be made.",
+    "action": "profile_data.profile(df)"
+  },
+  {
+    "agent": "Agent Profiler",
+    "observation": "32561 rows x 15 cols, 4262 missing cells (0.87%), 24 duplicate rows. Columns needing attention: ['workclass', 'occupation', 'native_country']."
+  },
+  {
+    "agent": "Engine Decision",
+    "thought": "Route each flagged column to rule-based or semantic (LLM) handling based on dtype and cardinality. Flagged: ['workclass', 'occupation', 'native_country']."
+  },
+  {
+    "agent": "Engine Decision",
+    "action": "route('workclass') -> llm:semantic_impute",
+    "observation": "categorical, low cardinality ratio (0.000 <= 0.5) -> needs semantic reasoning"
+  },
+  {
+    "agent": "Engine Decision",
+    "action": "route('occupation') -> llm:semantic_impute",
+    "observation": "categorical, low cardinality ratio (0.000 <= 0.5) -> needs semantic reasoning"
+  },
+  {
+    "agent": "Engine Decision",
+    "action": "route('native_country') -> llm:semantic_impute",
+    "observation": "categorical, low cardinality ratio (0.001 <= 0.5) -> needs semantic reasoning"
+  },
+  {
+    "agent": "Agent Cleaner",
+    "thought": "3 column(s) need semantic imputation. Using LLM backend: Ollama."
+  },
+  {
+    "agent": "Agent Cleaner",
+    "action": "semantic_impute('workclass') on 100 row(s)",
+    "observation": "Produced 100 suggestion(s)."
+  },
+  {
+    "agent": "Agent Cleaner",
+    "action": "semantic_impute('occupation') on 100 row(s)",
+    "observation": "Produced 100 suggestion(s)."
+  },
+  {
+    "agent": "Agent Cleaner",
+    "action": "semantic_impute('native_country') on 100 row(s)",
+    "observation": "Produced 100 suggestion(s)."
+  },
+  {
+    "agent": "Agent Reviewer",
+    "thought": "Reviewing 300 suggestion(s) against confidence threshold 70."
+  },
+  {
+    "agent": "Agent Reviewer",
+    "action": "apply_accepted_changes()",
+    "observation": "272/300 corrections accepted and applied (threshold=70)."
+  }
+]

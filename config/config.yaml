@@ -23,7 +23,7 @@ decision_engine:
   # Errors detectable by simple rules are NOT sent to the LLM
   simple_error_types: ["missing_value", "duplicate", "type_mismatch", "format_error"]
   semantic_error_types: ["semantic_inconsistency", "schema_mismatch_semantic", "unstructured_text"]
-  max_rows_per_llm_batch: 20
+  max_rows_per_llm_batch: 100
   # Columns with unique-value ratio above this are treated as identifier-like
   # (name/id/free text) and routed straight to the LLM/semantic path instead
   # of rule-based mode imputation.

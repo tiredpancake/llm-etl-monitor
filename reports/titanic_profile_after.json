@@ -1,0 +1,102 @@
+{
+  "n_rows": 891,
+  "n_columns": 12,
+  "duplicate_rows": 0,
+  "overall_missing_cells": 0,
+  "overall_missing_pct": 0.0,
+  "columns": {
+    "PassengerId": {
+      "dtype": "int64",
+      "missing_count": 0,
+      "missing_pct": 0.0,
+      "unique_count": 891,
+      "min": 1.0,
+      "max": 891.0,
+      "mean": 446.0
+    },
+    "Survived": {
+      "dtype": "int64",
+      "missing_count": 0,
+      "missing_pct": 0.0,
+      "unique_count": 2,
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.3838383838383838
+    },
+    "Pclass": {
+      "dtype": "int64",
+      "missing_count": 0,
+      "missing_pct": 0.0,
+      "unique_count": 3,
+      "min": 1.0,
+      "max": 3.0,
+      "mean": 2.308641975308642
+    },
+    "Name": {
+      "dtype": "string",
+      "missing_count": 0,
+      "missing_pct": 0.0,
+      "unique_count": 891
+    },
+    "Sex": {
+      "dtype": "string",
+      "missing_count": 0,
+      "missing_pct": 0.0,
+      "unique_count": 2
+    },
+    "Age": {
+      "dtype": "float64",
+      "missing_count": 0,
+      "missing_pct": 0.0,
+      "unique_count": 88,
+      "min": 0.42,
+      "max": 80.0,
+      "mean": 29.36158249158249
+    },
+    "SibSp": {
+      "dtype": "int64",
+      "missing_count": 0,
+      "missing_pct": 0.0,
+      "unique_count": 7,
+      "min": 0.0,
+      "max": 8.0,
+      "mean": 0.5230078563411896
+    },
+    "Parch": {
+      "dtype": "int64",
+      "missing_count": 0,
+      "missing_pct": 0.0,
+      "unique_count": 7,
+      "min": 0.0,
+      "max": 6.0,
+      "mean": 0.38159371492704824
+    },
+    "Ticket": {
+      "dtype": "string",
+      "missing_count": 0,
+      "missing_pct": 0.0,
+      "unique_count": 681
+    },
+    "Fare": {
+      "dtype": "float64",
+      "missing_count": 0,
+      "missing_pct": 0.0,
+      "unique_count": 248,
+      "min": 0.0,
+      "max": 512.3292,
+      "mean": 32.204207968574636
+    },
+    "Cabin": {
+      "dtype": "string",
+      "missing_count": 0,
+      "missing_pct": 0.0,
+      "unique_count": 147
+    },
+    "Embarked": {
+      "dtype": "string",
+      "missing_count": 0,
+      "missing_pct": 0.0,
+      "unique_count": 3
+    }
+  }
+}

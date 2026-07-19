@@ -1,0 +1,143 @@
+{
+  "dataset": "adult_income",
+  "reference_rows": 32561,
+  "current_rows": 32561,
+  "columns_checked": 15,
+  "columns_skipped_id_like": [],
+  "columns_drifted": 12,
+  "drift_share": 0.8,
+  "drift_detected": true,
+  "drifted_columns": [
+    "age",
+    "workclass",
+    "fnlwgt",
+    "education",
+    "education_num",
+    "marital_status",
+    "occupation",
+    "relationship",
+    "sex",
+    "capital_gain",
+    "capital_loss",
+    "hours_per_week"
+  ],
+  "columns": {
+    "age": {
+      "type": "numeric",
+      "ks_statistic": 0.5169,
+      "ks_p_value": 0.0,
+      "kl_divergence": 1.3464,
+      "ref_mean": 38.5816,
+      "cur_mean": 59.1011,
+      "drift": true
+    },
+    "workclass": {
+      "type": "categorical",
+      "psi": 0.2454,
+      "js_divergence": 0.0428,
+      "num_categories": 9,
+      "drift": true
+    },
+    "fnlwgt": {
+      "type": "numeric",
+      "ks_statistic": 0.5899,
+      "ks_p_value": 0.0,
+      "kl_divergence": 1.2174,
+      "ref_mean": 189778.3665,
+      "cur_mean": 347659.5469,
+      "drift": true
+    },
+    "education": {
+      "type": "categorical",
+      "psi": 0.8503,
+      "js_divergence": 0.1475,
+      "num_categories": 16,
+      "drift": true
+    },
+    "education_num": {
+      "type": "numeric",
+      "ks_statistic": 0.5977,
+      "ks_p_value": 0.0,
+      "kl_divergence": 1.2741,
+      "ref_mean": 10.0807,
+      "cur_mean": 13.9419,
+      "drift": true
+    },
+    "marital_status": {
+      "type": "categorical",
+      "psi": 0.5763,
+      "js_divergence": 0.1004,
+      "num_categories": 7,
+      "drift": true
+    },
+    "occupation": {
+      "type": "categorical",
+      "psi": 1.5412,
+      "js_divergence": 0.2554,
+      "num_categories": 15,
+      "drift": true
+    },
+    "relationship": {
+      "type": "categorical",
+      "psi": 0.6615,
+      "js_divergence": 0.1153,
+      "num_categories": 6,
+      "drift": true
+    },
+    "race": {
+      "type": "categorical",
+      "psi": 0.1088,
+      "js_divergence": 0.0188,
+      "num_categories": 5,
+      "drift": false
+    },
+    "sex": {
+      "type": "categorical",
+      "psi": 0.2919,
+      "js_divergence": 0.0507,
+      "num_categories": 2,
+      "drift": true
+    },
+    "capital_gain": {
+      "type": "numeric",
+      "ks_statistic": 0.9217,
+      "ks_p_value": 0.0,
+      "kl_divergence": 3.9042,
+      "ref_mean": 1077.6488,
+      "cur_mean": 12163.2326,
+      "drift": true
+    },
+    "capital_loss": {
+      "type": "numeric",
+      "ks_statistic": 0.9519,
+      "ks_p_value": 0.0,
+      "kl_divergence": 6.0266,
+      "ref_mean": 87.3038,
+      "cur_mean": 691.409,
+      "drift": true
+    },
+    "hours_per_week": {
+      "type": "numeric",
+      "ks_statistic": 0.6839,
+      "ks_p_value": 0.0,
+      "kl_divergence": 1.3789,
+      "ref_mean": 40.4375,
+      "cur_mean": 58.9483,
+      "drift": true
+    },
+    "native_country": {
+      "type": "categorical",
+      "psi": 0.0803,
+      "js_divergence": 0.0138,
+      "num_categories": 42,
+      "drift": false
+    },
+    "income": {
+      "type": "categorical",
+      "psi": 0.1903,
+      "js_divergence": 0.0331,
+      "num_categories": 2,
+      "drift": false
+    }
+  }
+}

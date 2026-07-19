@@ -1,29 +1,3 @@
-"""
-Multi-agent orchestrator - Section 7.3 of the proposal ("جریان تعامل عامل‌ها").
-
-Implements the exact interaction flow described there:
-
-  1. Agent Profiler analyzes the data and produces a JSON quality report.
-  2. Engine Decision picks the processing path based on that report.
-  3. If semantic analysis is needed, Agent Cleaner activates and produces
-     suggested corrections.
-  4. Agent Reviewer validates the output and applies valid changes.
-  5. Every step, decision, and result is logged to MLflow for audit,
-     traceability, and performance analysis.
-
-This is a hand-rolled ReAct-style loop (each agent emits Thought / Action /
-Observation trace entries) rather than a LangChain/CrewAI AgentExecutor,
-because LangChain's 1.x agent API changed its whole executor model and
-CrewAI pulls in a large, version-fragile dependency tree; a direct
-implementation of the same four-agent flow is more robust for a course
-project and easier to grade/debug, while remaining a drop-in target to wrap
-with LangChain/CrewAI tools later (each Agent class below is already a plain
-`run(...)`-style callable, i.e. tool-shaped).
-
-Usage:
-    python -m src.agents.orchestrator --dataset titanic
-    python -m src.agents.orchestrator --dataset titanic --mock-llm --no-mlflow
-"""
 from __future__ import annotations
 
 import argparse
@@ -38,12 +12,12 @@ import yaml
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "pipelines"))
 
-from llm_client import get_llm_client, MockLLMClient  # noqa: E402
-from profiler_agent import ProfilerAgent  # noqa: E402
-from decision_agent import DecisionAgent  # noqa: E402
-from cleaner_agent import CleanerAgent  # noqa: E402
-from reviewer_agent import ReviewerAgent  # noqa: E402
-from run_pipeline import ingest as generic_ingest, rule_based_clean, quality_metrics, load_config  # noqa: E402
+from llm_client import get_llm_client, MockLLMClient
+from profiler_agent import ProfilerAgent
+from decision_agent import DecisionAgent
+from cleaner_agent import CleanerAgent
+from reviewer_agent import ReviewerAgent
+from run_pipeline import ingest as generic_ingest, rule_based_clean, quality_metrics, load_config
 
 
 def _completeness(df: pd.DataFrame) -> float:
@@ -62,13 +36,11 @@ def run_agentic_pipeline(dataset: str, cfg: dict, use_mlflow: bool = True,
     raw = generic_ingest(ds_cfg["path"], na_tokens)
     print(f"Ingested: {raw.shape[0]} rows x {raw.shape[1]} cols")
 
-    # --- Step 1: Agent Profiler ---
     profiler = ProfilerAgent()
     profile_report, trace = profiler.run(raw, dataset)
     full_trace += trace
     print(f"[{profiler.name}] flagged columns: {profile_report['_flagged_columns']}")
 
-    # --- Step 2: Engine Decision ---
     decision_agent = DecisionAgent(
         high_cardinality_ratio=cfg.get("decision_engine", {}).get("high_cardinality_ratio", 0.5)
     )
@@ -77,7 +49,6 @@ def run_agentic_pipeline(dataset: str, cfg: dict, use_mlflow: bool = True,
     for d in decisions:
         print(f"[{decision_agent.name}] {d['column']} -> {d['route']}:{d['action']} ({d['reason']})")
 
-    # --- Deterministic pass: apply the RULE-routed decisions immediately ---
     df = raw.copy()
     rule_cols = [d["column"] for d in decisions if d["route"] == "rule"]
     dup_mask = df.duplicated(keep="first")
@@ -92,7 +63,12 @@ def run_agentic_pipeline(dataset: str, cfg: dict, use_mlflow: bool = True,
             mode = df[col].mode(dropna=True)
             df[col] = df[col].fillna(mode.iloc[0] if not mode.empty else "")
 
-    # --- Step 3: Agent Cleaner (only if any column was routed to LLM) ---
+    semantic_errors_identified: Dict[str, int] = {
+        d["column"]: int(df[d["column"]].isna().sum())
+        for d in decisions if d["route"] == "llm"
+    }
+    total_semantic_errors = sum(semantic_errors_identified.values())
+
     llm_client, is_real_ollama = get_llm_client(cfg, prefer_mock=force_mock_llm)
     cleaner = CleanerAgent(
         llm_client=llm_client,
@@ -103,7 +79,14 @@ def run_agentic_pipeline(dataset: str, cfg: dict, use_mlflow: bool = True,
     print(f"[{cleaner.name}] {len(suggestions)} suggestion(s) generated "
           f"(backend: {'Ollama' if is_real_ollama else 'MockLLMClient - offline'})")
 
-    # --- Step 4: Agent Reviewer ---
+    if total_semantic_errors > len(suggestions):
+        print(f"[{cleaner.name}] NOTE: only {len(suggestions)}/{total_semantic_errors} "
+              f"missing values were actually sent to the LLM "
+              f"(capped by decision_engine.max_rows_per_llm_batch="
+              f"{cfg.get('decision_engine', {}).get('max_rows_per_llm_batch', 20)} per column). "
+              f"The remaining {total_semantic_errors - len(suggestions)} will be "
+              f"rule-based mode-imputed as a fallback, not LLM-corrected.")
+
     reviewer = ReviewerAgent(
         confidence_threshold=cfg.get("agents", {}).get("score_confidence_threshold", 70)
     )
@@ -112,17 +95,32 @@ def run_agentic_pipeline(dataset: str, cfg: dict, use_mlflow: bool = True,
     accepted = sum(1 for r in review_results if r["accepted"])
     print(f"[{reviewer.name}] {accepted}/{len(review_results)} corrections accepted")
 
-    # Any LLM-routed column still missing after review (rejected/low-confidence)
-    # falls back to rule-based mode imputation so completeness still resolves.
+    fallback_fill_counts: Dict[str, int] = {}
     for d in decisions:
-        if d["route"] == "llm" and df[d["column"]].isna().sum() > 0:
-            mode = df[d["column"]].mode(dropna=True)
-            df[d["column"]] = df[d["column"]].fillna(mode.iloc[0] if not mode.empty else "")
+        if d["route"] == "llm":
+            n_missing = int(df[d["column"]].isna().sum())
+            if n_missing > 0:
+                mode = df[d["column"]].mode(dropna=True)
+                df[d["column"]] = df[d["column"]].fillna(mode.iloc[0] if not mode.empty else "")
+                fallback_fill_counts[d["column"]] = n_missing
 
     metrics = quality_metrics(raw, df, duplicates_removed)
-    error_correction_rate = 100.0 * accepted / len(review_results) if review_results else None
 
-    # --- Step 5: persist + MLflow logging (all decisions/results, per Section 7.2) ---
+    error_correction_rate = (
+        100.0 * accepted / total_semantic_errors if total_semantic_errors else None
+    )
+
+    llm_batch_acceptance_rate = (
+        100.0 * accepted / len(review_results) if review_results else None
+    )
+
+    metrics["fallback_mode_filled_counts"] = fallback_fill_counts
+    metrics["fallback_mode_filled_total"] = sum(fallback_fill_counts.values())
+    metrics["semantic_errors_identified_total"] = total_semantic_errors
+    metrics["semantic_errors_sent_to_llm"] = len(review_results)
+    metrics["error_correction_rate"] = error_correction_rate
+    metrics["llm_batch_acceptance_rate"] = llm_batch_acceptance_rate
+
     os.makedirs("reports", exist_ok=True)
     os.makedirs("data/processed", exist_ok=True)
     paths = {
@@ -134,7 +132,7 @@ def run_agentic_pipeline(dataset: str, cfg: dict, use_mlflow: bool = True,
         "metrics": f"reports/{dataset}_agentic_metrics.json",
         "processed": f"data/processed/{dataset}_agentic_cleaned.csv",
     }
-    profile_report.pop("_flagged_columns", None)  # not JSON-critical, drop internal marker duplicate
+    profile_report.pop("_flagged_columns", None)
     for key, obj in (("profile", profile_report), ("decisions", decisions),
                      ("suggestions", suggestions), ("review", review_results),
                      ("trace", full_trace), ("metrics", metrics)):
@@ -144,25 +142,33 @@ def run_agentic_pipeline(dataset: str, cfg: dict, use_mlflow: bool = True,
 
     print(f"Duplicates removed:   {duplicates_removed}")
     print(f"Completeness:         {metrics['completeness_before']}% -> {metrics['completeness_after']}%")
+    if fallback_fill_counts:
+        print(f"Fallback mode-imputed (beyond LLM batch/rejected): {fallback_fill_counts}")
     if error_correction_rate is not None:
-        print(f"Error correction rate: {error_correction_rate:.2f}%")
+        print(f"Error correction rate (proposal formula, LLM-corrected/total semantic errors): "
+              f"{error_correction_rate:.2f}%")
+    if llm_batch_acceptance_rate is not None:
+        print(f"LLM batch acceptance rate (accepted/sent-to-LLM only):        "
+              f"{llm_batch_acceptance_rate:.2f}%")
     print("Artifacts saved under reports/ and data/processed/")
 
     if use_mlflow:
         _log_to_mlflow(dataset, cfg, metrics, decisions, review_results,
-                       error_correction_rate, paths)
+                       error_correction_rate, llm_batch_acceptance_rate, paths)
 
     return {
         "metrics": metrics,
         "decisions": decisions,
         "review_results": review_results,
         "error_correction_rate": error_correction_rate,
+        "llm_batch_acceptance_rate": llm_batch_acceptance_rate,
         "paths": paths,
     }
 
 
 def _log_to_mlflow(dataset: str, cfg: dict, metrics: Dict, decisions: List[Dict],
-                   review_results: List[Dict], error_correction_rate, paths: Dict) -> bool:
+                   review_results: List[Dict], error_correction_rate,
+                   llm_batch_acceptance_rate, paths: Dict) -> bool:
     try:
         import mlflow
     except ImportError:
@@ -176,16 +182,21 @@ def _log_to_mlflow(dataset: str, cfg: dict, metrics: Dict, decisions: List[Dict]
             mlflow.log_param("routing_policy", "multi_agent_react")
             mlflow.log_param("llm_routed_columns", [d["column"] for d in decisions if d["route"] == "llm"])
             for k, v in metrics.items():
-                mlflow.log_metric(k, v)
+                if isinstance(v, (int, float)):
+                    mlflow.log_metric(k, v)
+                else:
+                    mlflow.log_param(k, str(v))
             mlflow.log_metric("llm_total_decisions", len(review_results))
             mlflow.log_metric("llm_accepted_decisions", sum(1 for r in review_results if r["accepted"]))
             if error_correction_rate is not None:
                 mlflow.log_metric("error_correction_rate", error_correction_rate)
+            if llm_batch_acceptance_rate is not None:
+                mlflow.log_metric("llm_batch_acceptance_rate", llm_batch_acceptance_rate)
             for p in paths.values():
                 if os.path.exists(p):
                     mlflow.log_artifact(p)
         return True
-    except Exception as exc:  # pragma: no cover - depends on server availability
+    except Exception as exc:
         print(f"[orchestrator] MLflow logging skipped ({type(exc).__name__}: {exc}).")
         return False
 

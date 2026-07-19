@@ -1,0 +1,23 @@
+[
+  {
+    "column": "salary",
+    "missing_count": 61,
+    "route": "rule",
+    "action": "mode_or_manual_review",
+    "reason": "categorical, high cardinality ratio (0.952 > 0.5) -> identifier-like, not a good LLM target"
+  },
+  {
+    "column": "country",
+    "missing_count": 61,
+    "route": "llm",
+    "action": "semantic_impute",
+    "reason": "categorical, low cardinality ratio (0.010 <= 0.5) -> needs semantic reasoning"
+  },
+  {
+    "column": "performance_score",
+    "missing_count": 61,
+    "route": "rule",
+    "action": "impute_median",
+    "reason": "numeric column -> deterministic median imputation"
+  }
+]

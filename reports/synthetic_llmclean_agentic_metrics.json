@@ -1,0 +1,13 @@
+{
+  "completeness_before": 99.46,
+  "completeness_after": 100.0,
+  "dqis_score": 0.5429,
+  "duplicate_rate_before": 0.0,
+  "duplicate_rate_after": 0.0,
+  "fallback_mode_filled_counts": {},
+  "fallback_mode_filled_total": 0,
+  "semantic_errors_identified_total": 20,
+  "semantic_errors_sent_to_llm": 20,
+  "error_correction_rate": 100.0,
+  "llm_batch_acceptance_rate": 100.0
+}

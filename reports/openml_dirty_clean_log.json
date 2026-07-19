@@ -1,0 +1,23 @@
+{
+  "duplicates_removed": 17,
+  "imputations": [
+    {
+      "column": "salary",
+      "strategy": "mode",
+      "filled_count": 60,
+      "fill_value": "121497"
+    },
+    {
+      "column": "country",
+      "strategy": "mode",
+      "filled_count": 60,
+      "fill_value": "Brazil"
+    },
+    {
+      "column": "performance_score",
+      "strategy": "median",
+      "filled_count": 60,
+      "fill_value": "6.0"
+    }
+  ]
+}

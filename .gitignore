@@ -16,6 +16,9 @@ ENV/
 mlflow_data/
 mlruns/
 mlartifacts/
+mlflow.db
+mlruns/
+*_dump.txt
 
 # --- Data (often large / sensitive - keep raw data out of git) ---
 data/raw/*
@@ -24,7 +27,8 @@ data/processed/*
 !data/processed/.gitkeep
 
 # --- Reports / generated outputs ---
-reports/*.json
+# JSON reports ARE tracked (they're the evidence of pipeline runs, small,
+# and not easily reproducible since LLM outputs vary run to run).
 !reports/.gitkeep
 
 # --- IDE / OS ---

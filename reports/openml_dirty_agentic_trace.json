@@ -1,0 +1,48 @@
+[
+  {
+    "agent": "Agent Profiler",
+    "thought": "Need a baseline data-quality report for 'openml_dirty' before any routing decision can be made.",
+    "action": "profile_data.profile(df)"
+  },
+  {
+    "agent": "Agent Profiler",
+    "observation": "2020 rows x 10 cols, 183 missing cells (0.91%), 17 duplicate rows. Columns needing attention: ['salary', 'country', 'performance_score']."
+  },
+  {
+    "agent": "Engine Decision",
+    "thought": "Route each flagged column to rule-based or semantic (LLM) handling based on dtype and cardinality. Flagged: ['salary', 'country', 'performance_score']."
+  },
+  {
+    "agent": "Engine Decision",
+    "action": "route('salary') -> rule:mode_or_manual_review",
+    "observation": "categorical, high cardinality ratio (0.952 > 0.5) -> identifier-like, not a good LLM target"
+  },
+  {
+    "agent": "Engine Decision",
+    "action": "route('country') -> llm:semantic_impute",
+    "observation": "categorical, low cardinality ratio (0.010 <= 0.5) -> needs semantic reasoning"
+  },
+  {
+    "agent": "Engine Decision",
+    "action": "route('performance_score') -> rule:impute_median",
+    "observation": "numeric column -> deterministic median imputation"
+  },
+  {
+    "agent": "Agent Cleaner",
+    "thought": "1 column(s) need semantic imputation. Using LLM backend: Ollama."
+  },
+  {
+    "agent": "Agent Cleaner",
+    "action": "semantic_impute('country') on 60 row(s)",
+    "observation": "Produced 60 suggestion(s)."
+  },
+  {
+    "agent": "Agent Reviewer",
+    "thought": "Reviewing 60 suggestion(s) against confidence threshold 70."
+  },
+  {
+    "agent": "Agent Reviewer",
+    "action": "apply_accepted_changes()",
+    "observation": "59/60 corrections accepted and applied (threshold=70)."
+  }
+]

@@ -1,0 +1,53 @@
+[
+  {
+    "agent": "Agent Profiler",
+    "thought": "Need a baseline data-quality report for 'titanic' before any routing decision can be made.",
+    "action": "profile_data.profile(df)"
+  },
+  {
+    "agent": "Agent Profiler",
+    "observation": "891 rows x 12 cols, 866 missing cells (8.1%), 0 duplicate rows. Columns needing attention: ['Age', 'Cabin', 'Embarked']."
+  },
+  {
+    "agent": "Engine Decision",
+    "thought": "Route each flagged column to rule-based or semantic (LLM) handling based on dtype and cardinality. Flagged: ['Age', 'Cabin', 'Embarked']."
+  },
+  {
+    "agent": "Engine Decision",
+    "action": "route('Age') -> rule:impute_median",
+    "observation": "numeric column -> deterministic median imputation"
+  },
+  {
+    "agent": "Engine Decision",
+    "action": "route('Cabin') -> llm:semantic_impute",
+    "observation": "categorical, low cardinality ratio (0.165 <= 0.5) -> needs semantic reasoning"
+  },
+  {
+    "agent": "Engine Decision",
+    "action": "route('Embarked') -> llm:semantic_impute",
+    "observation": "categorical, low cardinality ratio (0.003 <= 0.5) -> needs semantic reasoning"
+  },
+  {
+    "agent": "Agent Cleaner",
+    "thought": "2 column(s) need semantic imputation. Using LLM backend: Ollama."
+  },
+  {
+    "agent": "Agent Cleaner",
+    "action": "semantic_impute('Cabin') on 100 row(s)",
+    "observation": "Produced 100 suggestion(s)."
+  },
+  {
+    "agent": "Agent Cleaner",
+    "action": "semantic_impute('Embarked') on 2 row(s)",
+    "observation": "Produced 2 suggestion(s)."
+  },
+  {
+    "agent": "Agent Reviewer",
+    "thought": "Reviewing 102 suggestion(s) against confidence threshold 70."
+  },
+  {
+    "agent": "Agent Reviewer",
+    "action": "apply_accepted_changes()",
+    "observation": "100/102 corrections accepted and applied (threshold=70)."
+  }
+]

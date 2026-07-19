@@ -1,0 +1,15 @@
+{
+  "completeness_before": 91.9005,
+  "completeness_after": 100.0,
+  "dqis_score": 8.8134,
+  "duplicate_rate_before": 0.0,
+  "duplicate_rate_after": 0.0,
+  "fallback_mode_filled_counts": {
+    "Cabin": 589
+  },
+  "fallback_mode_filled_total": 589,
+  "semantic_errors_identified_total": 689,
+  "semantic_errors_sent_to_llm": 102,
+  "error_correction_rate": 14.513788098693759,
+  "llm_batch_acceptance_rate": 98.03921568627452
+}

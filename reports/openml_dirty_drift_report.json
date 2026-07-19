@@ -1,0 +1,97 @@
+{
+  "dataset": "openml_dirty",
+  "reference_rows": 2020,
+  "current_rows": 2020,
+  "columns_checked": 8,
+  "columns_skipped_id_like": [
+    "salary",
+    "hire_date"
+  ],
+  "columns_drifted": 8,
+  "drift_share": 1.0,
+  "drift_detected": true,
+  "drifted_columns": [
+    "employee_id",
+    "full_name",
+    "age",
+    "department",
+    "email",
+    "country",
+    "is_manager",
+    "performance_score"
+  ],
+  "columns": {
+    "employee_id": {
+      "type": "numeric",
+      "ks_statistic": 0.4272,
+      "ks_p_value": 0.0,
+      "kl_divergence": 3.1954,
+      "ref_mean": 100999.0797,
+      "cur_mean": 101850.2221,
+      "drift": true
+    },
+    "full_name": {
+      "type": "categorical",
+      "psi": 3.1926,
+      "js_divergence": 0.415,
+      "num_categories": 100,
+      "drift": true
+    },
+    "age": {
+      "type": "categorical",
+      "psi": 2.8792,
+      "js_divergence": 0.3923,
+      "num_categories": 56,
+      "drift": true
+    },
+    "department": {
+      "type": "categorical",
+      "psi": 1.2855,
+      "js_divergence": 0.2181,
+      "num_categories": 6,
+      "drift": true
+    },
+    "salary": {
+      "type": "categorical",
+      "skipped": "id_like_column",
+      "unique_ratio": 0.9816,
+      "drift": false
+    },
+    "hire_date": {
+      "type": "categorical",
+      "skipped": "id_like_column",
+      "unique_ratio": 0.9396,
+      "drift": false
+    },
+    "email": {
+      "type": "categorical",
+      "psi": 3.2565,
+      "js_divergence": 0.4141,
+      "num_categories": 110,
+      "drift": true
+    },
+    "country": {
+      "type": "categorical",
+      "psi": 1.9781,
+      "js_divergence": 0.3102,
+      "num_categories": 21,
+      "drift": true
+    },
+    "is_manager": {
+      "type": "categorical",
+      "psi": 1.191,
+      "js_divergence": 0.2032,
+      "num_categories": 8,
+      "drift": true
+    },
+    "performance_score": {
+      "type": "numeric",
+      "ks_statistic": 0.9433,
+      "ks_p_value": 0.0,
+      "kl_divergence": 3.4421,
+      "ref_mean": 6.3277,
+      "cur_mean": 20.339,
+      "drift": true
+    }
+  }
+}
