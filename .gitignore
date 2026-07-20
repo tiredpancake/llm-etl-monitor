@@ -26,10 +26,15 @@ data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 
-# --- Reports / generated outputs ---
-# JSON reports ARE tracked (they're the evidence of pipeline runs, small,
-# and not easily reproducible since LLM outputs vary run to run).
+# --- Generated reports ---
+# Per-run files are reproducible and are stored as MLflow artifacts.
+reports/*
 !reports/.gitkeep
+!reports/README.md
+!reports/examples/
+!reports/examples/**
+!reports/final/
+!reports/final/**
 
 # --- IDE / OS ---
 .vscode/

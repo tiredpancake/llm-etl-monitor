@@ -3,7 +3,7 @@ Shared LLM client used by Agent Cleaner (Section 6.5 / 7.2 of the proposal).
 
 Two implementations:
 - OllamaClient: talks to a real local Ollama server (http://localhost:11434),
-  same endpoint already used by src/llm_layer/semantic_cleaner.py.
+  the local Ollama REST endpoint.
 - MockLLMClient: deterministic, offline stand-in used for unit-testing the
   agent orchestration logic (routing, confidence thresholds, MLflow logging)
   in environments without a GPU / Ollama running, e.g. CI.

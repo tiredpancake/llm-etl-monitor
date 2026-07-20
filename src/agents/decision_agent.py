@@ -2,8 +2,7 @@
 Engine Decision (Section 6.4 / 7.1 / 7.3 of the proposal).
 
 "Based on the profiling report, Engine Decision chooses the appropriate
-processing path." This generalizes src/decision_engine/decision_engine.py
-(which hardcoded Titanic column names) into a dataset-agnostic router driven
+processing path." The implementation is a dataset-agnostic router driven
 by column dtype + cardinality, matching the same underlying policy the
 Titanic script encoded by hand:
 

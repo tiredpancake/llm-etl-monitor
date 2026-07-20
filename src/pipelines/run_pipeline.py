@@ -8,11 +8,9 @@ reads a dataset entry from `config/config.yaml` and runs the full flow:
            -> data-quality metrics -> drift detection -> save reports
            -> MLflow logging (degrades gracefully if no server)
 
-Only the *deterministic* (Rule-Based) half of the Hybrid Router is executed
-here: whitespace/format normalization, missing-value imputation and exact
-duplicate removal. The semantic (LLM) correction step is intentionally left as
-a hook (`--with-llm` is a no-op placeholder) so this runs with no GPU / no
-Ollama. Run `src/llm_layer/semantic_cleaner.py` separately for the LLM pass.
+This module runs the deterministic Rule-Based half of the workflow:
+whitespace/format normalization, missing-value imputation and exact duplicate
+removal. Use `src.agents.orchestrator` for the complete agent and LLM flow.
 
 Usage:
     python -m src.pipelines.run_pipeline --dataset adult_income
