@@ -82,7 +82,7 @@ def review_llm_decisions(llm_log_path, output_path):
             "accepted_by_reviewer": accepted
         })
 
-        status = "✅ ACCEPTED" if accepted else "❌ REJECTED"
+        status = " ACCEPTED" if accepted else " REJECTED"
         print(f"ردیف {entry['row_index']}: {status} (پیش‌بینی: {predicted})")
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
